@@ -55,7 +55,7 @@ def update_google_sheet(phone_number: str, order_id: str, status: str):
     except Exception as e:
         print(f"[GOOGLE SHEET ERROR] Failed to update Google Sheet: {e}")
 
-# --- 4. WHATSAPP TEMPLATE SENDER FUNCTIONS (Updated with exact Meta names) ---
+# --- 4. WHATSAPP TEMPLATE SENDER FUNCTIONS (Updated to en_US) ---
 def send_order_confirmation_button(phone_number: str, customer_name: str, order_id: str, total_amount: str):
     print(f"[DEBUG] Sending confirmation button template to: {phone_number}")
     endpoint = f"{WHATSAPP_API_URL}/{PHONE_NUMBER_ID}/messages"
@@ -71,7 +71,7 @@ def send_order_confirmation_button(phone_number: str, customer_name: str, order_
         "type": "template",
         "template": {
             "name": "confirmation_message_templete",
-            "language": {"code": "en"},
+            "language": {"code": "en_US"},
             "components": [
                 {
                     "type": "body",
@@ -102,8 +102,8 @@ def send_success_reply_template(phone_number: str, customer_name: str, order_id:
         "to": phone_number,
         "type": "template",
         "template": {
-            "name": "confirm_order",  # Updated to match your Meta template name
-            "language": {"code": "en"},
+            "name": "confirm_order",
+            "language": {"code": "en_US"},
             "components": [
                 {
                     "type": "body",
@@ -129,8 +129,8 @@ def send_cancel_reply_template(phone_number: str, customer_name: str, order_id: 
         "to": phone_number,
         "type": "template",
         "template": {
-            "name": "cancel_order",  # Updated to match your Meta template name
-            "language": {"code": "en"},
+            "name": "cancel_order",
+            "language": {"code": "en_US"},
             "components": [
                 {
                     "type": "body",
@@ -156,8 +156,8 @@ def send_delivery_feedback_template(phone_number: str, customer_name: str, order
         "to": phone_number,
         "type": "template",
         "template": {
-            "name": "feedback_templete",  # Updated to match your Meta template name
-            "language": {"code": "en"},
+            "name": "feedback_templete",
+            "language": {"code": "en_US"},
             "components": [
                 {
                     "type": "body",
@@ -207,9 +207,7 @@ def test_manual_order():
         return jsonify({"status": "error", "message": "Phone number is invalid or missing."}), 400
         
     try:
-        # Trigger WhatsApp Template
         send_order_confirmation_button(phone_number, customer_name, order_id, total_amount)
-        # Record/Update Google Sheet test entry
         update_google_sheet(phone_number, order_id, "Pending Test")
         
         return jsonify({
