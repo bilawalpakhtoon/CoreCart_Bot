@@ -55,7 +55,7 @@ def update_google_sheet(phone_number: str, order_id: str, status: str):
     except Exception as e:
         print(f"[GOOGLE SHEET ERROR] Failed to update Google Sheet: {e}")
 
-# --- 4. WHATSAPP TEMPLATE SENDER FUNCTIONS ---
+# --- 4. WHATSAPP TEMPLATE SENDER FUNCTIONS (Updated with exact Meta names) ---
 def send_order_confirmation_button(phone_number: str, customer_name: str, order_id: str, total_amount: str):
     print(f"[DEBUG] Sending confirmation button template to: {phone_number}")
     endpoint = f"{WHATSAPP_API_URL}/{PHONE_NUMBER_ID}/messages"
@@ -102,7 +102,7 @@ def send_success_reply_template(phone_number: str, customer_name: str, order_id:
         "to": phone_number,
         "type": "template",
         "template": {
-            "name": "corecart_success_reply",
+            "name": "confirm_order",  # Updated to match your Meta template name
             "language": {"code": "en"},
             "components": [
                 {
@@ -129,7 +129,7 @@ def send_cancel_reply_template(phone_number: str, customer_name: str, order_id: 
         "to": phone_number,
         "type": "template",
         "template": {
-            "name": "corecart_cancel_reply",
+            "name": "cancel_order",  # Updated to match your Meta template name
             "language": {"code": "en"},
             "components": [
                 {
@@ -156,7 +156,7 @@ def send_delivery_feedback_template(phone_number: str, customer_name: str, order
         "to": phone_number,
         "type": "template",
         "template": {
-            "name": "corecart_delivery_feedback",
+            "name": "feedback_templete",  # Updated to match your Meta template name
             "language": {"code": "en"},
             "components": [
                 {
@@ -194,7 +194,7 @@ def send_guidance_message(phone_number: str):
     except Exception as e:
         print(f"[ERROR] Failed to send guidance text: {e}")
 
-# --- 6. MANUAL BROWSER TEST ROUTE (Fixes 404 Error) ---
+# --- 6. MANUAL BROWSER TEST ROUTE ---
 @app.route('/test-manual-order', methods=['GET'])
 def test_manual_order():
     raw_phone = request.args.get('phone', '92327687895')
