@@ -71,7 +71,7 @@ def send_order_confirmation_button(phone_number: str, customer_name: str, order_
         "type": "template",
         "template": {
             "name": "confirmation_message_templete",
-            "language": {"code": "en_US"},
+            "language": {"code": "en"},
             "components": [
                 {
                     "type": "body",
@@ -103,7 +103,7 @@ def send_success_reply_template(phone_number: str, customer_name: str, order_id:
         "type": "template",
         "template": {
             "name": "confirm_order",
-            "language": {"code": "en_US"},
+            "language": {"code": "en"},
             "components": [
                 {
                     "type": "body",
@@ -130,7 +130,7 @@ def send_cancel_reply_template(phone_number: str, customer_name: str, order_id: 
         "type": "template",
         "template": {
             "name": "cancel_order",
-            "language": {"code": "en_US"},
+            "language": {"code": "en"},
             "components": [
                 {
                     "type": "body",
@@ -157,7 +157,7 @@ def send_delivery_feedback_template(phone_number: str, customer_name: str, order
         "type": "template",
         "template": {
             "name": "feedback_templete",
-            "language": {"code": "en_US"},
+            "language": {"code": "en"},
             "components": [
                 {
                     "type": "body",
@@ -197,7 +197,6 @@ def send_guidance_message(phone_number: str):
 # --- 6. MANUAL BROWSER TEST ROUTE ---
 @app.route('/test-manual-order', methods=['GET'])
 def test_manual_order():
-    # Agar URL mein ?phone= doge toh woh utha lega, warna default number use karega
     raw_phone = request.args.get('phone') or '923276878958'
     phone_number = format_phone_number(raw_phone)
     
@@ -300,7 +299,7 @@ def whatsapp_webhook():
                             if not check_order_exists(order_id):
                                 update_google_sheet(sender_phone, order_id, "Cancelled")
                                 send_cancel_reply_template(sender_phone, customer_name, order_id)
-                        
+                    
                     elif msg_type == 'text':
                         print(f"[TEXT RECEIVED] Non-button text from {sender_phone}")
                         send_guidance_message(sender_phone)
