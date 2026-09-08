@@ -55,7 +55,7 @@ def update_google_sheet(phone_number: str, order_id: str, status: str):
     except Exception as e:
         print(f"[GOOGLE SHEET ERROR] Failed to update Google Sheet: {e}")
 
-# --- 4. WHATSAPP TEMPLATE SENDER FUNCTIONS (Updated to en_US) ---
+# --- 4. WHATSAPP TEMPLATE SENDER FUNCTIONS ---
 def send_order_confirmation_button(phone_number: str, customer_name: str, order_id: str, total_amount: str):
     print(f"[DEBUG] Sending confirmation button template to: {phone_number}")
     endpoint = f"{WHATSAPP_API_URL}/{PHONE_NUMBER_ID}/messages"
@@ -197,11 +197,13 @@ def send_guidance_message(phone_number: str):
 # --- 6. MANUAL BROWSER TEST ROUTE ---
 @app.route('/test-manual-order', methods=['GET'])
 def test_manual_order():
-    raw_phone = request.args.get('phone', '92327687895')
+    # Agar URL mein ?phone= doge toh woh utha lega, warna default number use karega
+    raw_phone = request.args.get('phone') or '923276878958'
     phone_number = format_phone_number(raw_phone)
-    customer_name = "Muhammad Bilawal"
-    order_id = "Z-1001"
-    total_amount = "2999"
+    
+    customer_name = request.args.get('name', 'Muhammad Bilawal')
+    order_id = request.args.get('order_id', 'Z-1001')
+    total_amount = request.args.get('total', '2999')
     
     if not phone_number:
         return jsonify({"status": "error", "message": "Phone number is invalid or missing."}), 400
@@ -223,6 +225,9 @@ def test_manual_order():
 @app.route('/shopify-order', methods=['POST'])
 def handle_shopify_order():
     order_data = request.get_json()
+    if not order_data:
+        return jsonify({"status": "error", "message": "No JSON payload received"}), 400
+        
     try:
         customer_name = order_data.get('customer', {}).get('first_name', 'Valued Customer')
         raw_phone = order_data.get('shipping_address', {}).get('phone') or order_data.get('customer', {}).get('phone', '')
@@ -236,6 +241,7 @@ def handle_shopify_order():
                 print(f"[DUPLICATE BLOCKED] Order {order_id} is already processed. Skipping message.")
             else:
                 send_order_confirmation_button(phone_number, customer_name, order_id, total_price)
+                update_google_sheet(phone_number, order_id, "Pending Shopify")
         else:
             print("[WARNING] Phone number missing in Shopify order payload.")
             
@@ -261,6 +267,8 @@ def whatsapp_webhook():
         return "Verification failed: Missing parameters", 400
 
     data = request.get_json()
+    if not data:
+        return jsonify({"status": "success"}), 200
     
     try:
         entries = data.get('entry', [])
@@ -292,7 +300,7 @@ def whatsapp_webhook():
                             if not check_order_exists(order_id):
                                 update_google_sheet(sender_phone, order_id, "Cancelled")
                                 send_cancel_reply_template(sender_phone, customer_name, order_id)
-                            
+                        
                     elif msg_type == 'text':
                         print(f"[TEXT RECEIVED] Non-button text from {sender_phone}")
                         send_guidance_message(sender_phone)
