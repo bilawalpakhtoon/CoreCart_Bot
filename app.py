@@ -194,7 +194,34 @@ def send_guidance_message(phone_number: str):
     except Exception as e:
         print(f"[ERROR] Failed to send guidance text: {e}")
 
-# --- 6. SHOPIFY WEBHOOK ROUTE ---
+# --- 6. MANUAL BROWSER TEST ROUTE (Fixes 404 Error) ---
+@app.route('/test-manual-order', methods=['GET'])
+def test_manual_order():
+    raw_phone = request.args.get('phone', '92327687895')
+    phone_number = format_phone_number(raw_phone)
+    customer_name = "Muhammad Bilawal"
+    order_id = "Z-1001"
+    total_amount = "2999"
+    
+    if not phone_number:
+        return jsonify({"status": "error", "message": "Phone number is invalid or missing."}), 400
+        
+    try:
+        # Trigger WhatsApp Template
+        send_order_confirmation_button(phone_number, customer_name, order_id, total_amount)
+        # Record/Update Google Sheet test entry
+        update_google_sheet(phone_number, order_id, "Pending Test")
+        
+        return jsonify({
+            "status": "success",
+            "message": f"Manual test order triggered successfully for {phone_number}",
+            "order_id": order_id
+        }), 200
+    except Exception as e:
+        print(f"[TEST ROUTE ERROR] {e}")
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+# --- 7. SHOPIFY WEBHOOK ROUTE ---
 @app.route('/shopify-order', methods=['POST'])
 def handle_shopify_order():
     order_data = request.get_json()
@@ -219,7 +246,7 @@ def handle_shopify_order():
         
     return jsonify({"status": "received"}), 200
 
-# --- 7. META WEBHOOK ROUTE ---
+# --- 8. META WEBHOOK ROUTE ---
 @app.route('/webhook', methods=['GET', 'POST'])
 def whatsapp_webhook():
     if request.method == 'GET':
@@ -261,13 +288,13 @@ def whatsapp_webhook():
                             if not check_order_exists(order_id):
                                 update_google_sheet(sender_phone, order_id, "Confirmed")
                                 send_success_reply_template(sender_phone, customer_name, order_id)
-                            
+                        
                         elif reply_id.startswith("cancel_"):
                             order_id = reply_id.replace("cancel_", "")
                             if not check_order_exists(order_id):
                                 update_google_sheet(sender_phone, order_id, "Cancelled")
                                 send_cancel_reply_template(sender_phone, customer_name, order_id)
-                                
+                            
                     elif msg_type == 'text':
                         print(f"[TEXT RECEIVED] Non-button text from {sender_phone}")
                         send_guidance_message(sender_phone)
